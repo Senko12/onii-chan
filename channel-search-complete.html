@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Channel Search</title>
+<style>
+body{font-family:Arial;background:#111;color:#eee;padding:20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px}
+.card{background:#1a1a1a;padding:15px;border-radius:10px;text-align:center}
+.card img{max-width:100%;max-height:120px;object-fit:contain}
+.btn{padding:6px 10px;border-radius:6px;border:1px solid #555;background:#222;color:#fff;margin:3px;cursor:pointer}
+.btn.primary{background:#2563eb;border-color:#2563eb}
+</style>
+</head>
+<body>
+<h1>Channel Search</h1>
+<input id="searchBox" placeholder="Search..." style="width:100%;padding:10px;border-radius:8px;border:1px solid #444;background:#222;color:#eee;">
+<div class="grid" id="channelGrid"></div>
+
+<script>
+const data = [
+  {
+    "name": "FOX 13 (Memphis)",
+    "logo": "https://bloximages.chicago2.vip.townnews.com/fox13memphis.com/content/tncms/custom/image/e65fbe42-71b7-11ed-a238-0feaf1db8ecc.png",
+    "link": "https://cdn-uw2-prod.tsv2.amagi.tv/linear/amg02104-imagicommcommun-whbqbreaking-ono/playlist.m3u8"
+  },
+  {
+    "name": "ION (Memphis)",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Ion_logo.svg/512px-Ion_logo.svg.png",
+    "link": "http://104.255.88.155/ion/index.m3u8"
+  },
+  {
+    "name": "CNBC",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/CNBC_logo.svg/512px-CNBC_logo.svg.png",
+    "link": "https://fl1.moveonjoy.com/CNBC/index.m3u8"
+  },
+  {
+    "name": "Cozi TV",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Cozi_TV_logo.svg/512px-Cozi_TV_logo.svg.png",
+    "link": "https://fl1.moveonjoy.com/COZI_TV/index.m3u8"
+  },
+  {
+    "name": "Golf Channel",
+    "logo": "https://i.imgur.com/Lgux6Ik.png",
+    "link": "https://fl1.moveonjoy.com/GOLF/index.m3u8"
+  },
+  {
+    "name": "MSNBC",
+    "logo": "https://static.wikia.nocookie.net/logopedia/images/7/7f/MSNBC_2023.svg/revision/latest?cb=20231126000955",
+    "link": "http://41.205.93.154/MSNBC/index.m3u8"
+  },
+  {
+    "name": "NBC`",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/NBC_logo_2022_%28vertical%29.svg/512px-NBC_logo_2022_%28vertical%29.svg.png",
+    "link": "https://streamer2.nexgen.bz/NBC/index.m3u8"
+  },
+  {
+    "name": "CNBC World",
+    "logo": "https://zap2it.tmsimg.com/h3/NowShowing/26849/s26849_ll_h15_ab.png?w=512",
+    "link": "https://fl1.moveonjoy.com/CNBC_World/index.m3u8"
+  },
+  {
+    "name": "The Weather Channel",
+    "logo": "https://i.imgur.com/PIaNjfa.png",
+    "link": "https://twcprod-live.twc-tv.com/v1/manifest/b4d4d63a49309cc5140171fb2e92485c31be1e9e/DSP_6228e4760505741a116f1ba2_twcprod-live/6bf09ce5-366b-463c-b67e-c4b799f73c3f/4.m3u8"
+  },
+  {
+    "name": "AccuWeather NOW",
+    "logo": "https://i.imgur.com/M8wbVYK.png",
+    "link": "https://amg00684-accuweather-accuweather-rokuus-0endj.amagi.tv/playlist.m3u8"
+  },
+  {
+    "name": "Fox Weather",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Fox_Weather_logo.svg/512px-Fox_Weather_logo.svg.png",
+    "link": "https://247wlive.foxweather.com/stream/index.m3u8"
+  },
+  {
+    "name": "ION TV",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Ion_logo.svg/512px-Ion_logo.svg.png",
+    "link": "https://fl1.moveonjoy.com/ION_TV/index.m3u8"
+  },
+  {
+    "name": "Antenna TV",
+    "logo": "https://i.imgur.com/ocs2DeU.png",
+    "link": "https://cvtv.cvalley.net/hls/WDAFAntenna/WDAFAntenna.m3u8"
+  },
+  {
+    "name": "The CW",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/The_CW_2024.svg/512px-The_CW_2024.svg.png",
+    "link": "https://cvtv.cvalley.net/hls/KCWECW/KCWECW.m3u8"
+  },
+  {
+    "name": "CBC News Network",
+    "logo": "https://i.imgur.com/SjTdhvJ.png",
+    "link": "https://livetv-fa.tubi.video/cbc2/master.m3u8"
+  },
+  {
+    "name": "BBC Earth",
+    "logo": "https://i.imgur.com/nGSsUd4.png",
+    "link": "https://livetv-fa.tubi.video/bbc-earth2/playlist.m3u8"
+  },
+  {
+    "name": "BBC Four",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/BBC_Four_logo_2021.svg/512px-BBC_Four_logo_2021.svg.png",
+    "link": "https://streamer.nexyl.uk/48559ccd-6400-457d-8acc-06b9e24c2ed8.m3u8"
+  },
+  {
+    "name": "BBC Two",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/BBC_Two_logo_2021.svg/512px-BBC_Two_logo_2021.svg.png",
+    "link": "https://viamotionhsi.netplus.ch/live/eds/bbc2/browser-HLS8/bbc2.m3u8"
+  },
+  {
+    "name": "BBC Three",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/BBC_Three_2022.svg/512px-BBC_Three_2022.svg.png",
+    "link": "https://streamer.nexyl.uk/39290a19-b8dd-43ea-b8dc-081c37790f24.m3u8"
+  },
+  {
+    "name": "Channel 4",
+    "logo": "https://d2n0069hmnqmmx.cloudfront.net/epgdata/1.0/newchanlogos/512/512/skychb1621.png",
+    "link": "https://viamotionhsi.netplus.ch/live/eds/channel4/browser-HLS8/channel4.m3u8"
+  },
+  {
+    "name": "BBC America",
+    "logo": "https://i.imgur.com/pTiiPz0.png",
+    "link": "https://fl1.moveonjoy.com/BBC_AMERICA/index.m3u8"
+  },
+  {
+    "name": "beIN Sports USA",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Bein_Sports_Logo.svg/512px-Bein_Sports_Logo.svg.png",
+    "link": "http://fl1.moveonjoy.com/BEIN_SPORTS/index.m3u8"
+  },
+  {
+    "name": "beIN SPORTS XTRA",
+    "logo": "https://i.imgur.com/uJosqHh.png",
+    "link": "https://bein-beinxtrasports-firetv.amagi.tv/playlist.m3u8"
+  },
+  {
+    "name": "BET",
+    "logo": "https://i.imgur.com/copIbc9.png",
+    "link": "https://fl1.moveonjoy.com/BET_EAST/index.m3u8"
+  },
+  {
+    "name": "Comedy Central",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Comedy_Central_2018.svg/512px-Comedy_Central_2018.svg.png",
+    "link": "https://fl1.moveonjoy.com/Comedy_Central/index.m3u8"
+  },
+  {
+    "name": "Game Show Network",
+    "logo": "https://www.gameshownetwork.com/storage/app/media/2020/Navigation/gsn_logo.jpg",
+    "link": "https://a-cdn.klowdtv.com/live2/gsn_720p/playlist.m3u8"
+  },
+  {
+    "name": "Game Show Central",
+    "logo": "https://i.imgur.com/Uuc5h1s.png",
+    "link": "https://aegis-cloudfront-1.tubi.video/55c4e96c-e345-486c-8f61-8320b61d734d/playlist.m3u8"
+  },
+  {
+    "name": "HSN",
+    "logo": "https://i.imgur.com/rnZN7rD.png",
+    "link": "https://fl1.moveonjoy.com/HSN/index.m3u8"
+  },
+  {
+    "name": "HSN2",
+    "logo": "https://i.imgur.com/R6oC2A3.png",
+    "link": "https://qvc-amd-live.akamaized.net/hls/live/2034113/lshsn2us/master.m3u8"
+  },
+  {
+    "name": "ION Plus",
+    "logo": "https://i.imgur.com/1dgCvNE.png",
+    "link": "https://cdn-uw2-prod.tsv2.amagi.tv/linear/amg01438-ewscrippscompan-ionplus-tablo/playlist.m3u8"
+  },
+  {
+    "name": "MTV",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/MTV_2021_%28brand_version%29.svg/512px-MTV_2021_%28brand_version%29.svg.png",
+    "link": "https://fl1.moveonjoy.com/MTV/index.m3u8"
+  },
+  {
+    "name": "MTV2",
+    "logo": "https://upload.wikimedia.org/wikipedia/en/thumb/2/21/MTV2_logo_2013.svg/512px-MTV2_logo_2013.svg.png",
+    "link": "https://fl1.moveonjoy.com/MTV_2/index.m3u8"
+  },
+  {
+    "name": "MTV Live",
+    "logo": "https://i.imgur.com/3UByLqb.png",
+    "link": "https://fl1.moveonjoy.com/MTV_LIVE/index.m3u8"
+  },
+  {
+    "name": "MTV Classic",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/MTV_Classic_US.svg/512px-MTV_Classic_US.svg.png",
+    "link": "https://fl1.moveonjoy.com/MTV_CLASSIC/index.m3u8"
+  },
+  {
+    "name": "National Geographic",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Natgeologo.svg/512px-Natgeologo.svg.png",
+    "link": "https://fl1.moveonjoy.com/National_Geographic/index.m3u8"
+  },
+  {
+    "name": "NFL Channel",
+    "logo": "https://i.imgur.com/mPGtwAP.png",
+    "link": "https://aegis-cloudfront-1.tubi.video/4237973e-9e8c-4ec6-95b3-b7363ce39470/playlist.m3u8"
+  },
+  {
+    "name": "NFL Network",
+    "logo": "https://upload.wikimedia.org/wikipedia/en/thumb/8/8f/NFL_Network_logo.svg/512px-NFL_Network_logo.svg.png",
+    "link": "https://fl1.moveonjoy.com/NFL_NETWORK/index.m3u8"
+  },
+  {
+    "name": "Nickelodeon",
+    "logo": "https://i.imgur.com/E84jnP8.png",
+    "link": "https://fl1.moveonjoy.com/NICKELODEON/index.m3u8"
+  },
+  {
+    "name": "Nick Jr.",
+    "logo": "https://i.imgur.com/KT4tdQs.png",
+    "link": "https://fl1.moveonjoy.com/NICK_JR/index.m3u8"
+  },
+  {
+    "name": "NickMusic",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/NickMusic.svg/512px-NickMusic.svg.png",
+    "link": "https://fl1.moveonjoy.com/NICK_MUSIC/index.m3u8"
+  },
+  {
+    "name": "Nicktoons",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Nicktoons_Network_logo_2009.svg/512px-Nicktoons_Network_logo_2009.svg.png",
+    "link": "https://fl1.moveonjoy.com/NICKTOONS/index.m3u8"
+  },
+  {
+    "name": "Oxygen",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Oxygen_TV_%282017_Logo%29.svg/512px-Oxygen_TV_%282017_Logo%29.svg.png",
+    "link": "https://fl1.moveonjoy.com/OXYGEN/index.m3u8"
+  },
+  {
+    "name": "Paramount Network",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Paramount_Network.svg/512px-Paramount_Network.svg.png",
+    "link": "https://fl1.moveonjoy.com/PARAMOUNT_NETWORK/index.m3u8"
+  },
+  {
+    "name": "PBS",
+    "logo": "https://i.postimg.cc/ZnL6G6KV/pbs.png",
+    "link": "https://pbs.lls.cdn.pbs.org/est/index.m3u8"
+  },
+  {
+    "name": "PBS Antiques Roadshow",
+    "logo": "https://i.imgur.com/U9CYaok.png",
+    "link": "https://amg00953-pbsusa-antiroadshow-xumo-x6ud5.amagi.tv/playlist.m3u8"
+  },
+  {
+    "name": "PBS Kids",
+    "logo": "https://i.imgur.com/q4cUQKW.png",
+    "link": "https://livestream.pbskids.org/out/v1/14507d931bbe48a69287e4850e53443c/est.m3u8"
+  },
+  {
+    "name": "PBS Nature",
+    "logo": "https://i.imgur.com/Brry7cZ.png",
+    "link": "https://amg01597-wnetnewyorkpubl-pbsnature-xumo-8xorq.amagi.tv/playlist.m3u8"
+  },
+  {
+    "name": "PGA Tour",
+    "logo": "https://i.imgur.com/J0TY9dG.png",
+    "link": "https://aegis-cloudfront-1.tubi.video/9c59800e-fa9a-4539-b8e5-5769918e7c5a/playlist.m3u8"
+  },
+  {
+    "name": "QVC",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/QVC_logo_2019.svg/512px-QVC_logo_2019.svg.png",
+    "link": "https://a-cdn.klowdtv.com/live2/qvclive_720p/playlist.m3u8"
+  },
+  {
+    "name": "QVC2",
+    "logo": "https://i.imgur.com/NxbDjfI.png",
+    "link": "https://qvc-amd-live.akamaized.net/hls/live/2034113/lsqvc2us/master.m3u8"
+  },
+  {
+    "name": "QVC3",
+    "logo": "https://i.imgur.com/edswdOO.png",
+    "link": "https://qvc-amd-live.akamaized.net/hls/live/2034113/lsqvc3us/master.m3u8"
+  },
+  {
+    "name": "Reelz",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Reelz.svg/512px-Reelz.svg.png",
+    "link": "https://fl1.moveonjoy.com/REELZ/index.m3u8"
+  },
+  {
+    "name": "SEC Network",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/SEC_Network_logo.svg/512px-SEC_Network_logo.svg.png",
+    "link": "http://fl1.moveonjoy.com/SEC_NETWORK/index.m3u8"
+  },
+  {
+    "name": "Showtime",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Showtime.svg/512px-Showtime.svg.png",
+    "link": "https://fl1.moveonjoy.com/SHOWTIME/index.m3u8"
+  },
+  {
+    "name": "Showtime 2",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Showtime.svg/512px-Showtime.svg.png",
+    "link": "https://fl1.moveonjoy.com/SHOWTIME_2/index.m3u8"
+  },
+  {
+    "name": "Showtime Next",
+    "logo": "https://i.imgur.com/1Ak2MX2.png",
+    "link": "https://fl1.moveonjoy.com/SHOWTIME_NEXT/index.m3u8"
+  },
+  {
+    "name": "Showtime Women",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Showtime.svg/512px-Showtime.svg.png",
+    "link": "https://fl1.moveonjoy.com/SHOWTIME_WOMEN/index.m3u8"
+  },
+  {
+    "name": "Smithsonian Channel",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/SmithsonianChannellogo.png/512px-SmithsonianChannellogo.png",
+    "link": "https://fl1.moveonjoy.com/SMITHSONIAN_CHANNEL/index.m3u8"
+  },
+  {
+    "name": "Tennis Channel",
+    "logo": "https://i.imgur.com/tsljAnY.png",
+    "link": "https://fl1.moveonjoy.com/TENNIS_CHANNEL/index.m3u8"
+  },
+  {
+    "name": "TMZ",
+    "logo": "https://i.imgur.com/eLIe7Va.png",
+    "link": "https://livetv-fa.tubi.video/tmz/index.m3u8"
+  },
+  {
+    "name": "TV Land",
+    "logo": "https://i.imgur.com/VNNS4mF.png",
+    "link": "https://fl1.moveonjoy.com/TV_LAND/index.m3u8"
+  },
+  {
+    "name": "USA Network",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/USA_Network_logo_%282016%29.svg/512px-USA_Network_logo_%282016%29.svg.png",
+    "link": "http://fl1.moveonjoy.com/USA_NETWORK/index.m3u8"
+  },
+  {
+    "name": "World Fishing Network",
+    "logo": "https://i.imgur.com/2llPsSV.png",
+    "link": "https://fl1.moveonjoy.com/WORLD_FISHING_NETWORK/index.m3u8"
+  },
+  {
+    "name": "World Poker Tour",
+    "logo": "https://i.imgur.com/98kLMjj.png",
+    "link": "https://amg00218-wptenterprisesi-worldpokertour-xumo-us.amagi.tv/playlist.m3u8"
+  },
+  {
+    "name": "Yes Network",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/YES_Network_logo.svg/330px-YES_Network_logo.svg.png",
+    "link": "https://fl1.moveonjoy.com/YES_NETWORK/index.m3u8"
+  },
+  {
+    "name": "ESPNU",
+    "logo": "https://i.imgur.com/HiBrysh.png",
+    "link": "https://fl1.moveonjoy.com/ESPN_U/index.m3u8"
+  },
+  {
+    "name": "ESPNews",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/ESPNews.svg/512px-ESPNews.svg.png",
+    "link": "https://fl1.moveonjoy.com/ESPN_NEWS/index.m3u8"
+  },
+  {
+    "name": "CBS",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/CBS_logo_%282020%29.svg/512px-CBS_logo_%282020%29.svg.png",
+    "link": "https://fl1.moveonjoy.com/FL_West_Palm_Beach_CBS/index.m3u8"
+  }
+];
+let chanMap = {};
+
+fetch("channels.json")
+  .then(r=>r.json())
+  .then(json=>{
+    for(const key in json){ chanMap[ json[key] ] = key; }
+    render(data);
+  })
+  .catch(()=>render(data));
+
+function render(list){
+  const grid=document.getElementById("channelGrid");
+  grid.innerHTML="";
+  list.forEach(ch=>{
+    const key = chanMap[ch.link] || ch.name;
+    const cmd = "!chan " + key;
+
+    const card=document.createElement("div");
+    card.className="card";
+
+    let safeLink = ch.link.replace(/'/g,"&#39;");
+    let safeCmd = cmd.replace(/'/g,"&#39;");
+
+    card.innerHTML = `
+      <img src="${ch.logo}" onerror="this.style.display='none'">
+      <h3>${ch.name}</h3>
+      <button class='btn primary' onclick="window.open('${safeLink}','_blank')">▶ Open</button>
+      <button class='btn' onclick="navigator.clipboard.writeText('${safeLink}')">⧉ Copy URL</button>
+      <button class='btn' onclick="navigator.clipboard.writeText('${safeCmd}')">⌨ Copy !chan</button>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+document.getElementById("searchBox").addEventListener("input", e=>{
+  const q=e.target.value.toLowerCase();
+  const filtered=data.filter(x=>x.name.toLowerCase().includes(q));
+  render(filtered);
+});
+</script>
+</body>
+</html>
