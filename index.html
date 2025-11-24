@@ -4,423 +4,746 @@
 <head>
 <meta charset="UTF-8">
 <title>Channel Commands</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <style>
-body{font-family:Arial;background:#111;color:#eee;padding:20px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px}
-.card{background:#1a1a1a;padding:15px;border-radius:10px;text-align:center}
-.card img{max-width:100%;max-height:120px;object-fit:contain}
-.cmd{color:#9ca3af;margin-top:4px}
-.btn{padding:6px 10px;border-radius:6px;border:1px solid #555;background:#222;color:#fff;margin-top:6px;cursor:pointer}
+  body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #111827;
+    color: #e5e7eb;
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+
+  h1 {
+    margin: 0 0 10px;
+    font-size: clamp(1.4rem, 4vw, 2rem);
+    text-align: center;
+  }
+
+  .subtitle {
+    text-align: center;
+    font-size: 0.85rem;
+    color: #9ca3af;
+    margin-bottom: 12px;
+  }
+
+  #searchBox {
+    width: 100%;
+    max-width: 600px;
+    display: block;
+    margin: 0 auto 18px;
+    padding: 10px 12px;
+    border-radius: 999px;
+    border: 1px solid #4b5563;
+    background: #020617;
+    color: #e5e7eb;
+    box-sizing: border-box;
+  }
+
+  #searchBox::placeholder {
+    color: #9ca3af;
+  }
+
+  .section {
+    max-width: 960px;
+    margin: 0 auto 24px;
+  }
+
+  .section h2 {
+    font-size: 1rem;
+    margin: 0 0 8px;
+    color: #e5e7eb;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+  }
+
+  .card {
+    background: #111111;
+    padding: 14px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  }
+
+  .card img {
+    max-width: 100%;
+    max-height: 120px;
+    object-fit: contain;
+  }
+
+  .card h3 {
+    margin: 8px 0 4px;
+    font-size: 0.98rem;
+  }
+
+  .cmd {
+    color: #9ca3af;
+    margin-top: 4px;
+    font-size: 0.85rem;
+    word-break: break-all;
+  }
+
+  .btn {
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid #4b5563;
+    background: #1f2933;
+    color: #f9fafb;
+    margin-top: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background 0.12s ease, transform 0.08s ease;
+    width: 100%;
+    display: block;
+  }
+
+  .btn:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+  }
+
+  .no-results {
+    text-align: center;
+    font-size: 0.85rem;
+    color: #9ca3af;
+    margin-top: 8px;
+  }
+
+  /* Mobile tweaks */
+  @media (max-width: 640px) {
+    body {
+      padding: 12px;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      text-align: left;
+    }
+
+    .subtitle {
+      text-align: left;
+    }
+
+    #searchBox {
+      margin: 0 0 14px;
+    }
+
+    .section {
+      margin-bottom: 18px;
+    }
+
+    .grid {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .card {
+      padding: 12px;
+      text-align: left;
+    }
+
+    .card img {
+      max-height: 80px;
+    }
+  }
 </style>
 </head>
 <body>
-<h1>Channel Commands</h1>
-<input id="searchBox" placeholder="Search..." style="width:100%;padding:10px;border-radius:8px;border:1px solid #444;background:#222;color:#eee;">
-<div class="grid" id="channelGrid"></div>
+  <h1>Channel Commands</h1>
+  <p class="subtitle">Both !chan and a!scrn use the command name. Channels ending in US/UK go to those regions; CBC goes to Canada; everything else defaults to US.</p>
+  <input id="searchBox" placeholder="Search by name or command..." />
+
+  <div class="section" id="sectionUS">
+    <h2>🇺🇸 US Channels</h2>
+    <div class="grid" id="gridUS"></div>
+    <div class="no-results" id="noUS" style="display:none;">No US channels match your search.</div>
+  </div>
+
+  <div class="section" id="sectionCA">
+    <h2>🇨🇦 Canadian Channels</h2>
+    <div class="grid" id="gridCA"></div>
+    <div class="no-results" id="noCA" style="display:none;">No Canadian channels match your search.</div>
+  </div>
+
+  <div class="section" id="sectionUK">
+    <h2>🇬🇧 UK Channels</h2>
+    <div class="grid" id="gridUK"></div>
+    <div class="no-results" id="noUK" style="display:none;">No UK channels match your search.</div>
+  </div>
 
 <script>
 const data = [
   {
     "name": "ION (Memphis)",
     "cmd": "ion",
-    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Ion_logo.svg/512px-Ion_logo.svg.png"
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Ion_logo.svg/512px-Ion_logo.svg.png",
+    "region": "US"
   },
   {
     "name": "CNBC",
     "cmd": "CNBC",
-    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/CNBC_logo.svg/512px-CNBC_logo.svg.png"
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/CNBC_logo.svg/512px-CNBC_logo.svg.png",
+    "region": "US"
   },
   {
     "name": "Cozi TV",
     "cmd": "COZI",
-    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Cozi_TV_logo.svg/512px-Cozi_TV_logo.svg.png"
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Cozi_TV_logo.svg/512px-Cozi_TV_logo.svg.png",
+    "region": "US"
   },
   {
     "name": "Golf Channel",
     "cmd": "GolfChannel",
-    "logo": "https://i.imgur.com/Lgux6Ik.png"
+    "logo": "https://i.imgur.com/Lgux6Ik.png",
+    "region": "US"
   },
   {
     "name": "MSNBC",
     "cmd": "MSNBC",
-    "logo": "https://static.wikia.nocookie.net/logopedia/images/7/7f/MSNBC_2023.svg/revision/latest?cb=20231126000955"
+    "logo": "https://static.wikia.nocookie.net/logopedia/images/7/7f/MSNBC_2023.svg/revision/latest?cb=20231126000955",
+    "region": "US"
   },
   {
     "name": "NBC`",
     "cmd": "NBC",
-    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/NBC_logo_2022_%28vertical%29.svg/512px-NBC_logo_2022_%28vertical%29.svg.png"
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/NBC_logo_2022_%28vertical%29.svg/512px-NBC_logo_2022_%28vertical%29.svg.png",
+    "region": "US"
   },
   {
     "name": "CNBC World",
     "cmd": "CNBCWorld",
-    "logo": "https://zap2it.tmsimg.com/h3/NowShowing/26849/s26849_ll_h15_ab.png?w=512"
+    "logo": "https://zap2it.tmsimg.com/h3/NowShowing/26849/s26849_ll_h15_ab.png?w=512",
+    "region": "US"
   },
   {
     "name": "The Weather Channel",
     "cmd": "TheWeatherChannel",
-    "logo": "https://i.imgur.com/PIaNjfa.png"
+    "logo": "https://i.imgur.com/PIaNjfa.png",
+    "region": "US"
   },
   {
     "name": "AccuWeather NOW",
     "cmd": "AccuWeather",
-    "logo": "https://i.imgur.com/M8wbVYK.png"
+    "logo": "https://i.imgur.com/M8wbVYK.png",
+    "region": "US"
   },
   {
     "name": "Fox Weather",
     "cmd": "FoxWeather",
-    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Fox_Weather_logo.svg/512px-Fox_Weather_logo.svg.png"
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Fox_Weather_logo.svg/512px-Fox_Weather_logo.svg.png",
+    "region": "US"
   },
   {
     "name": "ION TV",
     "cmd": "ION",
-    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Ion_logo.svg/512px-Ion_logo.svg.png"
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Ion_logo.svg/512px-Ion_logo.svg.png",
+    "region": "US"
   },
   {
     "name": "Antenna TV",
     "cmd": "AntennaTV",
-    "logo": "https://i.imgur.com/ocs2DeU.png"
+    "logo": "https://i.imgur.com/ocs2DeU.png",
+    "region": "US"
   },
   {
     "name": "The CW",
     "cmd": "CW",
-    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/The_CW_2024.svg/512px-The_CW_2024.svg.png"
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/The_CW_2024.svg/512px-The_CW_2024.svg.png",
+    "region": "US"
   },
   {
     "name": "CBC News Network",
     "cmd": "CBCNewsCA",
-    "logo": "https://i.imgur.com/SjTdhvJ.png"
+    "logo": "https://i.imgur.com/SjTdhvJ.png",
+    "region": "US"
   },
   {
     "name": "BBC Earth",
     "cmd": "BBCEarthUS",
-    "logo": "https://i.imgur.com/nGSsUd4.png"
+    "logo": "https://i.imgur.com/nGSsUd4.png",
+    "region": "US"
   },
   {
     "name": "BBC Four",
     "cmd": "BBCFourUK",
-    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/BBC_Four_logo_2021.svg/512px-BBC_Four_logo_2021.svg.png"
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/BBC_Four_logo_2021.svg/512px-BBC_Four_logo_2021.svg.png",
+    "region": "US"
   },
   {
     "name": "BBC Two",
     "cmd": "BBCTwoUK",
-    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/BBC_Two_logo_2021.svg/512px-BBC_Two_logo_2021.svg.png"
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/BBC_Two_logo_2021.svg/512px-BBC_Two_logo_2021.svg.png",
+    "region": "US"
   },
   {
     "name": "BBC Three",
     "cmd": "BBCThreeUK",
-    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/BBC_Three_2022.svg/512px-BBC_Three_2022.svg.png"
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/BBC_Three_2022.svg/512px-BBC_Three_2022.svg.png",
+    "region": "US"
   },
   {
     "name": "Channel 4",
     "cmd": "ChannelFourUK",
-    "logo": "https://d2n0069hmnqmmx.cloudfront.net/epgdata/1.0/newchanlogos/512/512/skychb1621.png"
+    "logo": "https://d2n0069hmnqmmx.cloudfront.net/epgdata/1.0/newchanlogos/512/512/skychb1621.png",
+    "region": "US"
   },
   {
     "name": "BBC America",
     "cmd": "BBCAmericaUS",
-    "logo": "https://i.imgur.com/pTiiPz0.png"
+    "logo": "https://i.imgur.com/pTiiPz0.png",
+    "region": "US"
   },
   {
     "name": "beIN Sports USA",
     "cmd": "beINSports",
-    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Bein_Sports_Logo.svg/512px-Bein_Sports_Logo.svg.png"
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Bein_Sports_Logo.svg/512px-Bein_Sports_Logo.svg.png",
+    "region": "US"
   },
   {
     "name": "beIN SPORTS XTRA",
     "cmd": "beINSportsXTRA",
-    "logo": "https://i.imgur.com/uJosqHh.png"
+    "logo": "https://i.imgur.com/uJosqHh.png",
+    "region": "US"
   },
   {
     "name": "BET",
     "cmd": "BET",
-    "logo": "https://i.imgur.com/copIbc9.png"
+    "logo": "https://i.imgur.com/copIbc9.png",
+    "region": "US"
   },
   {
     "name": "Comedy Central",
     "cmd": "ComedyCentral",
-    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Comedy_Central_2018.svg/512px-Comedy_Central_2018.svg.png"
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Comedy_Central_2018.svg/512px-Comedy_Central_2018.svg.png",
+    "region": "US"
   },
   {
     "name": "Game Show Network",
     "cmd": "GameShowNetwork",
-    "logo": "https://www.gameshownetwork.com/storage/app/media/2020/Navigation/gsn_logo.jpg"
+    "logo": "https://www.gameshownetwork.com/storage/app/media/2020/Navigation/gsn_logo.jpg",
+    "region": "US"
   },
   {
     "name": "Game Show Central",
     "cmd": "GameShowCentral",
-    "logo": "https://i.imgur.com/Uuc5h1s.png"
+    "logo": "https://i.imgur.com/Uuc5h1s.png",
+    "region": "US"
   },
   {
     "name": "HSN",
     "cmd": "HomeShoppingNetwork",
-    "logo": "https://i.imgur.com/rnZN7rD.png"
+    "logo": "https://i.imgur.com/rnZN7rD.png",
+    "region": "US"
   },
   {
     "name": "HSN2",
     "cmd": "HomeShoppingNetwork2",
-    "logo": "https://i.imgur.com/R6oC2A3.png"
+    "logo": "https://i.imgur.com/R6oC2A3.png",
+    "region": "US"
   },
   {
     "name": "ION Plus",
     "cmd": "IONPlus",
-    "logo": "https://i.imgur.com/1dgCvNE.png"
+    "logo": "https://i.imgur.com/1dgCvNE.png",
+    "region": "US"
   },
   {
     "name": "MTV",
     "cmd": "MTV",
-    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/MTV_2021_%28brand_version%29.svg/512px-MTV_2021_%28brand_version%29.svg.png"
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/MTV_2021_%28brand_version%29.svg/512px-MTV_2021_%28brand_version%29.svg.png",
+    "region": "US"
   },
   {
     "name": "MTV2",
     "cmd": "MTV2",
-    "logo": "https://upload.wikimedia.org/wikipedia/en/thumb/2/21/MTV2_logo_2013.svg/512px-MTV2_logo_2013.svg.png"
+    "logo": "https://upload.wikimedia.org/wikipedia/en/thumb/2/21/MTV2_logo_2013.svg/512px-MTV2_logo_2013.svg.png",
+    "region": "US"
   },
   {
     "name": "MTV Live",
     "cmd": "MTVLive",
-    "logo": "https://i.imgur.com/3UByLqb.png"
+    "logo": "https://i.imgur.com/3UByLqb.png",
+    "region": "US"
   },
   {
     "name": "MTV Classic",
     "cmd": "MTVClassic",
-    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/MTV_Classic_US.svg/512px-MTV_Classic_US.svg.png"
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/MTV_Classic_US.svg/512px-MTV_Classic_US.svg.png",
+    "region": "US"
   },
   {
     "name": "National Geographic",
     "cmd": "NationalGeographic",
-    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Natgeologo.svg/512px-Natgeologo.svg.png"
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Natgeologo.svg/512px-Natgeologo.svg.png",
+    "region": "US"
   },
   {
     "name": "NFL Channel",
     "cmd": "NFLChannel",
-    "logo": "https://i.imgur.com/mPGtwAP.png"
+    "logo": "https://i.imgur.com/mPGtwAP.png",
+    "region": "US"
   },
   {
     "name": "NFL Network",
     "cmd": "NFLNetwork",
-    "logo": "https://upload.wikimedia.org/wikipedia/en/thumb/8/8f/NFL_Network_logo.svg/512px-NFL_Network_logo.svg.png"
+    "logo": "https://upload.wikimedia.org/wikipedia/en/thumb/8/8f/NFL_Network_logo.svg/512px-NFL_Network_logo.svg.png",
+    "region": "US"
   },
   {
     "name": "Nickelodeon",
     "cmd": "Nick",
-    "logo": "https://i.imgur.com/E84jnP8.png"
+    "logo": "https://i.imgur.com/E84jnP8.png",
+    "region": "US"
   },
   {
     "name": "Nick Jr.",
     "cmd": "NickJr",
-    "logo": "https://i.imgur.com/KT4tdQs.png"
+    "logo": "https://i.imgur.com/KT4tdQs.png",
+    "region": "US"
   },
   {
     "name": "NickMusic",
     "cmd": "NickMusic",
-    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/NickMusic.svg/512px-NickMusic.svg.png"
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/NickMusic.svg/512px-NickMusic.svg.png",
+    "region": "US"
   },
   {
     "name": "Nicktoons",
     "cmd": "NickToons",
-    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Nicktoons_Network_logo_2009.svg/512px-Nicktoons_Network_logo_2009.svg.png"
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Nicktoons_Network_logo_2009.svg/512px-Nicktoons_Network_logo_2009.svg.png",
+    "region": "US"
   },
   {
     "name": "Oxygen",
     "cmd": "Oxygen",
-    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Oxygen_TV_%282017_Logo%29.svg/512px-Oxygen_TV_%282017_Logo%29.svg.png"
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Oxygen_TV_%282017_Logo%29.svg/512px-Oxygen_TV_%282017_Logo%29.svg.png",
+    "region": "US"
   },
   {
     "name": "Paramount Network",
     "cmd": "ParamountNetwork",
-    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Paramount_Network.svg/512px-Paramount_Network.svg.png"
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Paramount_Network.svg/512px-Paramount_Network.svg.png",
+    "region": "US"
   },
   {
     "name": "PBS",
     "cmd": "PBSEast",
-    "logo": "https://i.postimg.cc/ZnL6G6KV/pbs.png"
+    "logo": "https://i.postimg.cc/ZnL6G6KV/pbs.png",
+    "region": "US"
   },
   {
     "name": "PBS Antiques Roadshow",
     "cmd": "PBSAntiRoad",
-    "logo": "https://i.imgur.com/U9CYaok.png"
+    "logo": "https://i.imgur.com/U9CYaok.png",
+    "region": "US"
   },
   {
     "name": "PBS Kids",
     "cmd": "PBSKidsEast",
-    "logo": "https://i.imgur.com/q4cUQKW.png"
+    "logo": "https://i.imgur.com/q4cUQKW.png",
+    "region": "US"
   },
   {
     "name": "PBS Nature",
     "cmd": "PBSNature",
-    "logo": "https://i.imgur.com/Brry7cZ.png"
+    "logo": "https://i.imgur.com/Brry7cZ.png",
+    "region": "US"
   },
   {
     "name": "PGA Tour",
     "cmd": "PGATour",
-    "logo": "https://i.imgur.com/J0TY9dG.png"
+    "logo": "https://i.imgur.com/J0TY9dG.png",
+    "region": "US"
   },
   {
     "name": "QVC",
     "cmd": "QVC",
-    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/QVC_logo_2019.svg/512px-QVC_logo_2019.svg.png"
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/QVC_logo_2019.svg/512px-QVC_logo_2019.svg.png",
+    "region": "US"
   },
   {
     "name": "QVC2",
     "cmd": "QVC2",
-    "logo": "https://i.imgur.com/NxbDjfI.png"
+    "logo": "https://i.imgur.com/NxbDjfI.png",
+    "region": "US"
   },
   {
     "name": "QVC3",
     "cmd": "QVC3",
-    "logo": "https://i.imgur.com/edswdOO.png"
+    "logo": "https://i.imgur.com/edswdOO.png",
+    "region": "US"
   },
   {
     "name": "Reelz",
     "cmd": "REELZ",
-    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Reelz.svg/512px-Reelz.svg.png"
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Reelz.svg/512px-Reelz.svg.png",
+    "region": "US"
   },
   {
     "name": "SEC Network",
     "cmd": "SECNetwork",
-    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/SEC_Network_logo.svg/512px-SEC_Network_logo.svg.png"
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/SEC_Network_logo.svg/512px-SEC_Network_logo.svg.png",
+    "region": "US"
   },
   {
     "name": "Showtime",
     "cmd": "Showtime",
-    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Showtime.svg/512px-Showtime.svg.png"
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Showtime.svg/512px-Showtime.svg.png",
+    "region": "US"
   },
   {
     "name": "Showtime 2",
     "cmd": "Showtime2",
-    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Showtime.svg/512px-Showtime.svg.png"
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Showtime.svg/512px-Showtime.svg.png",
+    "region": "US"
   },
   {
     "name": "Showtime Next",
     "cmd": "ShowtimeNext",
-    "logo": "https://i.imgur.com/1Ak2MX2.png"
+    "logo": "https://i.imgur.com/1Ak2MX2.png",
+    "region": "US"
   },
   {
     "name": "Showtime Women",
     "cmd": "ShowtimeWomen",
-    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Showtime.svg/512px-Showtime.svg.png"
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Showtime.svg/512px-Showtime.svg.png",
+    "region": "US"
   },
   {
     "name": "Smithsonian Channel",
     "cmd": "Smithsonian",
-    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/SmithsonianChannellogo.png/512px-SmithsonianChannellogo.png"
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/SmithsonianChannellogo.png/512px-SmithsonianChannellogo.png",
+    "region": "US"
   },
   {
     "name": "Tennis Channel",
     "cmd": "TennisChannel",
-    "logo": "https://i.imgur.com/tsljAnY.png"
+    "logo": "https://i.imgur.com/tsljAnY.png",
+    "region": "US"
   },
   {
     "name": "TMZ",
     "cmd": "TMZ",
-    "logo": "https://i.imgur.com/eLIe7Va.png"
+    "logo": "https://i.imgur.com/eLIe7Va.png",
+    "region": "US"
   },
   {
     "name": "TV Land",
     "cmd": "TVLand",
-    "logo": "https://i.imgur.com/VNNS4mF.png"
+    "logo": "https://i.imgur.com/VNNS4mF.png",
+    "region": "US"
   },
   {
     "name": "USA Network",
     "cmd": "USANetwork",
-    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/USA_Network_logo_%282016%29.svg/512px-USA_Network_logo_%282016%29.svg.png"
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/USA_Network_logo_%282016%29.svg/512px-USA_Network_logo_%282016%29.svg.png",
+    "region": "US"
   },
   {
     "name": "World Fishing Network",
     "cmd": "WorldFishingNetwork",
-    "logo": "https://i.imgur.com/2llPsSV.png"
+    "logo": "https://i.imgur.com/2llPsSV.png",
+    "region": "US"
   },
   {
     "name": "World Poker Tour",
     "cmd": "WorldPokerTour",
-    "logo": "https://i.imgur.com/98kLMjj.png"
+    "logo": "https://i.imgur.com/98kLMjj.png",
+    "region": "US"
   },
   {
     "name": "Yes Network",
     "cmd": "YesNetwork",
-    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/YES_Network_logo.svg/330px-YES_Network_logo.svg.png"
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/YES_Network_logo.svg/330px-YES_Network_logo.svg.png",
+    "region": "US"
   },
   {
     "name": "ESPNU",
     "cmd": "ESPNU",
-    "logo": "https://i.imgur.com/HiBrysh.png"
+    "logo": "https://i.imgur.com/HiBrysh.png",
+    "region": "US"
   },
   {
     "name": "ESPNews",
     "cmd": "ESPNews",
-    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/ESPNews.svg/512px-ESPNews.svg.png"
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/ESPNews.svg/512px-ESPNews.svg.png",
+    "region": "US"
   },
   {
     "name": "Fox Sports 1",
     "cmd": "FoxSports1",
-    "logo": "https://i.imgur.com/O9BapV9.png"
+    "logo": "https://i.imgur.com/O9BapV9.png",
+    "region": "US"
   },
   {
     "name": "Fox",
     "cmd": "Fox",
-    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Fox_Networks_Group_US_logo.svg/512px-Fox_Networks_Group_US_logo.svg.png"
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Fox_Networks_Group_US_logo.svg/512px-Fox_Networks_Group_US_logo.svg.png",
+    "region": "US"
   },
   {
     "name": "CBS",
     "cmd": "CBS",
-    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/CBS_logo_%282020%29.svg/512px-CBS_logo_%282020%29.svg.png"
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/CBS_logo_%282020%29.svg/512px-CBS_logo_%282020%29.svg.png",
+    "region": "US"
   },
   {
     "name": "ESPN",
     "cmd": "ESPN",
-    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/512px-ESPN_wordmark.svg.png"
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/512px-ESPN_wordmark.svg.png",
+    "region": "US"
   },
   {
     "name": "ESPN 2",
     "cmd": "ESPN2",
-    "logo": "https://i.imgur.com/00tsvjE.png"
+    "logo": "https://i.imgur.com/00tsvjE.png",
+    "region": "US"
+  },
+  {
+    "name": "CNN",
+    "cmd": "CNN",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/CNN.svg/512px-CNN.svg.png",
+    "region": "US"
+  },
+  {
+    "name": "Sky News",
+    "cmd": "SkyNews",
+    "logo": "https://d2n0069hmnqmmx.cloudfront.net/epgdata/1.0/newchanlogos/512/512/skychb1404.png",
+    "region": "UK"
+  },
+  {
+    "name": "More4",
+    "cmd": "MoreFourUK",
+    "logo": "https://i.imgur.com/cx5YcAU.png",
+    "region": "UK"
+  },
+  {
+    "name": "Film4",
+    "cmd": "FilmFourUK",
+    "logo": "https://i.imgur.com/MTSgoGI.png",
+    "region": "UK"
+  },
+  {
+    "name": "ITV3",
+    "cmd": "ITVThreeUK",
+    "logo": "https://i.imgur.com/JuyM2z5.png",
+    "region": "UK"
+  },
+  {
+    "name": "ITV4",
+    "cmd": "ITVFourUK",
+    "logo": "https://i.imgur.com/DYI4IA2.png",
+    "region": "UK"
   }
 ];
-const grid=document.getElementById("channelGrid");
-const searchBox=document.getElementById("searchBox");
+const gridUS = document.getElementById("gridUS");
+const gridCA = document.getElementById("gridCA");
+const gridUK = document.getElementById("gridUK");
+const noUS = document.getElementById("noUS");
+const noCA = document.getElementById("noCA");
+const noUK = document.getElementById("noUK");
+const searchBox = document.getElementById("searchBox");
 
-function render(list){
-  grid.innerHTML="";
-  list.forEach(ch=>{
-    const card=document.createElement("div");
-    card.className="card";
+function makeCard(ch) {
+  const card = document.createElement("div");
+  card.className = "card";
 
-    const img=document.createElement("img");
-    img.src=ch.logo;
-    img.onerror=()=>{img.style.display='none';};
+  if (ch.logo) {
+    const img = document.createElement("img");
+    img.src = ch.logo;
+    img.onerror = () => { img.style.display = "none"; };
     card.appendChild(img);
+  }
 
-    const name=document.createElement("h3");
-    name.textContent=ch.name;
-    card.appendChild(name);
+  const name = document.createElement("h3");
+  name.textContent = ch.name;
+  card.appendChild(name);
 
-    const cmd=document.createElement("div");
-    cmd.className="cmd";
-    cmd.textContent="!chan " + ch.cmd;
-    card.appendChild(cmd);
+  const cmd = document.createElement("div");
+  cmd.className = "cmd";
+  cmd.textContent = "!chan " + ch.cmd;
+  card.appendChild(cmd);
 
-    // Copy !chan <command>
-const btn1 = document.createElement("button");
-btn1.className = "btn";
-btn1.textContent = "Copy !chan";
-btn1.onclick = () => navigator.clipboard.writeText("!chan " + ch.cmd);
-card.appendChild(btn1);
+  // Button 1: Copy !chan <cmd>
+  const btn1 = document.createElement("button");
+  btn1.className = "btn";
+  btn1.textContent = "Copy !chan";
+  btn1.onclick = () => navigator.clipboard.writeText("!chan " + ch.cmd);
+  card.appendChild(btn1);
 
-// Copy a!scrn <channel name>
-const btn2 = document.createElement("button");
-btn2.className = "btn";
-btn2.textContent = "Copy a!scrn";
-btn2.onclick = () => navigator.clipboard.writeText("a!scrn " + ch.name);
-card.appendChild(btn2);
+  // Button 2: Copy a!scrn <cmd>
+  const btn2 = document.createElement("button");
+  btn2.className = "btn";
+  btn2.textContent = "Copy a!scrn";
+  btn2.onclick = () => navigator.clipboard.writeText("a!scrn " + ch.cmd);
+  card.appendChild(btn2);
 
-
-    grid.appendChild(card);
-  });
+  return card;
 }
 
-function filter(){
-  const q=searchBox.value.toLowerCase();
-  render(data.filter(x=>x.name.toLowerCase().includes(q) || x.cmd.toLowerCase().includes(q)));
+function render(list) {
+  gridUS.innerHTML = "";
+  gridCA.innerHTML = "";
+  gridUK.innerHTML = "";
+
+  const us = [];
+  const ca = [];
+  const uk = [];
+
+  list.forEach(ch => {
+    const cmdUp = (ch.cmd || "").toUpperCase();
+    const regionUp = (ch.region || "").toUpperCase();
+    const nameUp = (ch.name || "").toUpperCase();
+
+    const isCanada = regionUp === "CA" || nameUp.includes("CBC") || cmdUp.includes("CBC");
+    const isUK = !isCanada && (regionUp === "UK" || cmdUp.endsWith("UK"));
+    // Default: if not CA or UK, treat as US
+    const isUS = !isCanada && !isUK;
+
+    if (isCanada) {
+      ca.push(ch);
+    } else if (isUK) {
+      uk.push(ch);
+    } else if (isUS) {
+      us.push(ch);
+    }
+  });
+
+  if (us.length) {
+    us.forEach(ch => gridUS.appendChild(makeCard(ch)));
+    noUS.style.display = "none";
+  } else {
+    noUS.style.display = "block";
+  }
+
+  if (ca.length) {
+    ca.forEach(ch => gridCA.appendChild(makeCard(ch)));
+    noCA.style.display = "none";
+  } else {
+    noCA.style.display = "block";
+  }
+
+  if (uk.length) {
+    uk.forEach(ch => gridUK.appendChild(makeCard(ch)));
+    noUK.style.display = "none";
+  } else {
+    noUK.style.display = "block";
+  }
+}
+
+function filter() {
+  const q = searchBox.value.toLowerCase();
+  const filtered = data.filter(
+    x =>
+      (x.name || "").toLowerCase().includes(q) ||
+      (x.cmd || "").toLowerCase().includes(q)
+  );
+  render(filtered);
 }
 
 searchBox.addEventListener("input", filter);
