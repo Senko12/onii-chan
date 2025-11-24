@@ -399,11 +399,20 @@ function render(list){
     cmd.textContent="!chan " + ch.cmd;
     card.appendChild(cmd);
 
-    const btn=document.createElement("button");
-    btn.className="btn";
-    btn.textContent="Copy !chan";
-    btn.onclick=()=>navigator.clipboard.writeText("!chan " + ch.cmd);
-    card.appendChild(btn);
+    // Copy !chan <command>
+const btn1 = document.createElement("button");
+btn1.className = "btn";
+btn1.textContent = "Copy !chan";
+btn1.onclick = () => navigator.clipboard.writeText("!chan " + ch.cmd);
+card.appendChild(btn1);
+
+// Copy a!scrn <channel name>
+const btn2 = document.createElement("button");
+btn2.className = "btn";
+btn2.textContent = "Copy a!scrn";
+btn2.onclick = () => navigator.clipboard.writeText("a!scrn " + ch.name);
+card.appendChild(btn2);
+
 
     grid.appendChild(card);
   });
